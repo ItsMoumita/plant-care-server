@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-
+const {ObjectId} = require('mongodb');
 
 
 
@@ -28,6 +28,73 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 const plantCollection = client.db("plantCare").collection("plants");
+
+app.get("/myplants", async (req, res) => {
+  console.log(req.query);
+    const email = req.query.email;
+    console.log(email);
+    if(!email) {
+      return res.status(400).send({ error: "Email query parameter is required" });
+    }
+    const result = await plantCollection.find({ email}).toArray();
+    res.send(result);
+});
+
+app.delete("/plants/:id", async (req, res) => {
+  const id = req.params.id;
+  console.log(id);
+  try{
+    const result = await plantCollection.deleteOne({ _id: new ObjectId(id) });
+     res.send(result);
+  }
+  catch (error) {
+    console.error("Error deleting plant:", error);
+    return res.status(500).send({ error: "Failed to delete plant" });
+  }
+})
+
+app.get("/plants", async (req, res) => {
+   const result = await plantCollection.find().toArray();
+    res.send(result);
+});
+app.get("/plants/newplants" , async (req, res) => {
+
+  const result  = await plantCollection.find().sort({ nextWateringDate: 1 }).limit(6).toArray();
+  res.send(result);
+});
+// app.get("/plants/:id", async (req, res) => {
+//     console.log(req.params.id);
+//     const id = req.params.id;
+//     const query = { _id: new ObjectId(id) };
+//     const plant = await plantCollection.findOne(query);
+//     res.send(plant);
+// });
+
+
+function isValidObjectId(id) {
+  return ObjectId.isValid(id);
+}
+
+app.get("/plants/:id", async (req, res) => {
+  const id = req.params.id;
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).send({ error: "Invalid plant ID" });
+  }
+
+  try {
+    const query = { _id: new ObjectId(id) };
+    const plant = await plantCollection.findOne(query);
+    if (!plant) {
+      return res.status(404).send({ error: "Plant not found" });
+    }
+    res.send(plant);
+  } catch (error) {
+    res.status(500).send({ error: "Failed to fetch plant" });
+  }
+});
+
+
 
 
     app.post("/plants", async (req, res) => {
