@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
 
-    await client.connect();
+    // await client.connect();
     const plantCollection = client.db("plantCare").collection("plants");
     app.patch("/plants/:id", async (req, res) => {
       const { id } = req.params;
