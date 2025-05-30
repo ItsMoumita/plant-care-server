@@ -25,10 +25,24 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+  
     await client.connect();
 const plantCollection = client.db("plantCare").collection("plants");
-
+app.patch("/plants/:id", async (req, res) => {
+  const {id} = req.params;
+  const updatedPlant = req.body;
+  try{
+    const result = await plantCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updatedPlant }
+    );
+    res.send(result);
+  }
+  catch (error) {
+    console.error("Error updating plant:", error);
+    return res.status(500).send({ error: "Failed to update plant" });
+  }
+})
 app.get("/myplants", async (req, res) => {
   console.log(req.query);
     const email = req.query.email;
@@ -62,13 +76,6 @@ app.get("/plants/newplants" , async (req, res) => {
   const result  = await plantCollection.find().sort({ nextWateringDate: 1 }).limit(6).toArray();
   res.send(result);
 });
-// app.get("/plants/:id", async (req, res) => {
-//     console.log(req.params.id);
-//     const id = req.params.id;
-//     const query = { _id: new ObjectId(id) };
-//     const plant = await plantCollection.findOne(query);
-//     res.send(plant);
-// });
 
 
 function isValidObjectId(id) {
