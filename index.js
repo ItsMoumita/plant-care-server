@@ -44,9 +44,9 @@ app.patch("/plants/:id", async (req, res) => {
   }
 })
 app.get("/myplants", async (req, res) => {
-  console.log(req.query);
+
     const email = req.query.email;
-    console.log(email);
+   
     if(!email) {
       return res.status(400).send({ error: "Email query parameter is required" });
     }
@@ -56,7 +56,7 @@ app.get("/myplants", async (req, res) => {
 
 app.delete("/plants/:id", async (req, res) => {
   const id = req.params.id;
-  console.log(id);
+  
   try{
     const result = await plantCollection.deleteOne({ _id: new ObjectId(id) });
      res.send(result);
